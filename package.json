@@ -1,0 +1,53 @@
+{
+  "name": "react-native-fine-select",
+  "version": "0.1.0",
+  "description": "A themeable single/multiple select (dropdown) component for React Native with search, images/icons, and a bottom-sheet picker UI.",
+  "main": "lib/commonjs/index.js",
+  "module": "lib/module/index.js",
+  "types": "lib/typescript/index.d.ts",
+  "react-native": "src/index.tsx",
+  "source": "src/index.tsx",
+  "files": [
+    "src",
+    "lib",
+    "!**/__tests__",
+    "!**/.*"
+  ],
+  "scripts": {
+    "prepare": "bob build",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf lib"
+  },
+  "keywords": [
+    "react-native",
+    "select",
+    "dropdown",
+    "picker",
+    "multi-select",
+    "bottom-sheet"
+  ],
+  "author": "Olawale",
+  "license": "MIT",
+  "peerDependencies": {
+    "react": ">=17.0.0",
+    "react-native": ">=0.70.0"
+  },
+  "devDependencies": {
+    "@react-native/babel-preset": "^0.74.0",
+    "@types/react": "^19.0.0",
+    "react": "19.2.3",
+    "react-native": "0.86.2",
+    "react-native-builder-bob": "^0.23.2",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.8.3"
+  },
+  "react-native-builder-bob": {
+    "source": "src",
+    "output": "lib",
+    "targets": [
+      "commonjs",
+      "module",
+      "typescript"
+    ]
+  }
+}
