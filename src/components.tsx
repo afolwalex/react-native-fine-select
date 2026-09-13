@@ -44,9 +44,12 @@ export const CheckboxIndicator = ({
 );
 
 export const SearchIcon = ({ color }: { color: string }) => (
-    <View style={styles.searchIconWrap}>
-        <View style={[styles.searchIconCircle, { borderColor: color }]} />
-        <View style={[styles.searchIconHandle, { backgroundColor: color }]} />
+    <Text style={[styles.searchGlyph, { color }]}>🔍</Text>
+);
+
+export const CaretDownIcon = ({ color }: { color: string }) => (
+    <View style={styles.caretWrap}>
+        <View style={[styles.caret, { borderColor: color }]} />
     </View>
 );
 
@@ -94,26 +97,21 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         lineHeight: 14,
     },
-    searchIconWrap: {
-        width: 18,
-        height: 18,
+    searchGlyph: {
+        fontSize: 15,
     },
-    searchIconCircle: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
+    caretWrap: {
         width: 12,
         height: 12,
-        borderRadius: 6,
-        borderWidth: 2,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
-    searchIconHandle: {
-        position: 'absolute',
-        width: 2,
-        height: 7,
-        bottom: 0,
-        right: 1,
-        borderRadius: 1,
+    caret: {
+        width: 8,
+        height: 8,
+        borderRightWidth: 2,
+        borderBottomWidth: 2,
+        marginTop: -4,
         transform: [{ rotate: '45deg' }],
     },
     optionVisual: {

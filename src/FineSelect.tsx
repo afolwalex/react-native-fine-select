@@ -7,12 +7,21 @@ import {
     TextInput,
     FlatList,
     Modal,
+    Pressable,
+    KeyboardAvoidingView,
+    Platform,
     StyleProp,
     ViewStyle,
 } from 'react-native';
 import type { FineSelectMultipleProps, FineSelectOption, FineSelectProps } from './types';
 import { getColors } from './theme';
-import { CheckboxIndicator, OptionVisual, RadioIndicator, SearchIcon } from './components';
+import {
+    CaretDownIcon,
+    CheckboxIndicator,
+    OptionVisual,
+    RadioIndicator,
+    SearchIcon,
+} from './components';
 
 const DEFAULT_ACCENT_COLOR = '#ED212D';
 
@@ -25,19 +34,43 @@ const FineSelect = (props: FineSelectProps) => {
         multiple = false,
         title = 'Select',
         placeholder = 'Choose',
-        searchable = true,
+        searchable = false,
         searchPlaceholder = 'Search',
+        searchIcon,
+        caretIcon,
         colorTheme = DEFAULT_ACCENT_COLOR,
         theme = 'light',
+        colors: colorsOverride,
+        fontFamily,
         style,
         hideTrigger = false,
         open = false,
         onOpenChange,
         disabled = false,
         emptyText = 'No results found',
+        closeOnBackdropPress = true,
     } = props;
 
-    const colors = getColors(theme);
+    const colors = useMemo(
+        () => ({ ...getColors(theme), ...colorsOverride }),
+        [theme, colorsOverride],
+    );
+
+    const fonts = useMemo(() => {
+        if (!fontFamily) return {};
+        if (typeof fontFamily === 'string') {
+            return { regular: fontFamily, medium: fontFamily, bold: fontFamily };
+        }
+        return {
+            regular: fontFamily.regular,
+            medium: fontFamily.medium ?? fontFamily.regular,
+            bold: fontFamily.bold ?? fontFamily.regular,
+        };
+    }, [fontFamily]);
+
+    const regularFontStyle = fonts.regular ? { fontFamily: fonts.regular } : undefined;
+    const mediumFontStyle = fonts.medium ? { fontFamily: fonts.medium } : undefined;
+    const boldFontStyle = fonts.bold ? { fontFamily: fonts.bold } : undefined;
 
     const [visible, setVisible] = useState(false);
     const [search, setSearch] = useState('');
@@ -68,6 +101,10 @@ const FineSelect = (props: FineSelectProps) => {
     }, [open]);
 
     const cancelHandler = () => closeModal();
+
+    const backdropPressHandler = () => {
+        if (closeOnBackdropPress) closeModal();
+    };
 
     const chooseHandler = () => {
         if (!isMultipleProps(props)) return;
@@ -119,6 +156,7 @@ const FineSelect = (props: FineSelectProps) => {
                         <Text
                             style={[
                                 styles.itemText,
+                                regularFontStyle,
                                 { color: colors.text },
                                 selected && {
                                     color: colorTheme,
@@ -131,7 +169,11 @@ const FineSelect = (props: FineSelectProps) => {
                         </Text>
                         {!!item.other && (
                             <Text
-                                style={[styles.itemOther, { color: colors.placeholder }]}
+                                style={[
+                                    styles.itemOther,
+                                    regularFontStyle,
+                                    { color: colors.placeholder },
+                                ]}
                                 numberOfLines={1}
                             >
                                 {item.other}
@@ -160,20 +202,30 @@ const FineSelect = (props: FineSelectProps) => {
         <>
             {!hideTrigger && (
                 <TouchableOpacity
-                    style={[styles.input, style as StyleProp<ViewStyle>, disabled && styles.disabled]}
+                    style={[
+                        styles.trigger,
+                        {
+                            backgroundColor: colors.background,
+                            borderColor: colors.border,
+                        },
+                        style as StyleProp<ViewStyle>,
+                        disabled && styles.disabled,
+                    ]}
                     activeOpacity={0.7}
                     onPress={openModal}
                     disabled={disabled}
                 >
                     <Text
                         style={[
-                            styles.inputText,
+                            styles.triggerText,
+                            regularFontStyle,
                             { color: selectedLabel ? colors.text : colors.placeholder },
                         ]}
                         numberOfLines={1}
                     >
                         {selectedLabel || placeholder}
                     </Text>
+                    {caretIcon ?? <CaretDownIcon color={colors.placeholder} />}
                 </TouchableOpacity>
             )}
             <Modal
@@ -182,96 +234,132 @@ const FineSelect = (props: FineSelectProps) => {
                 visible={visible}
                 onRequestClose={cancelHandler}
             >
-                <View style={[styles.overlay, { backgroundColor: colors.overlay }]}>
-                    <View
-                        style={[styles.modalView, { backgroundColor: colors.background }]}
+                <KeyboardAvoidingView
+                    style={styles.flex}
+                    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                >
+                    <Pressable
+                        style={[styles.overlay, { backgroundColor: colors.overlay }]}
+                        onPress={backdropPressHandler}
                     >
-                        <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
-                        {searchable && (
-                            <View
-                                style={[
-                                    styles.searchBox,
-                                    {
-                                        backgroundColor: colors.card,
-                                        borderColor: colors.border,
-                                    },
-                                ]}
-                            >
-                                <SearchIcon color={colors.placeholder} />
-                                <TextInput
-                                    style={[styles.searchInput, { color: colors.text }]}
-                                    placeholder={searchPlaceholder}
-                                    placeholderTextColor={colors.placeholder}
-                                    value={search}
-                                    onChangeText={setSearch}
-                                />
-                            </View>
-                        )}
-                        <FlatList
-                            style={styles.list}
-                            data={filteredData}
-                            keyExtractor={item => item.value}
-                            renderItem={renderItem}
-                            keyboardShouldPersistTaps="handled"
-                            ItemSeparatorComponent={() => (
+                        <Pressable
+                            style={[styles.modalView, { backgroundColor: colors.background }]}
+                            onPress={() => {}}
+                        >
+                            <Text style={[styles.title, mediumFontStyle, { color: colors.text }]}>
+                                {title}
+                            </Text>
+                            {searchable && (
                                 <View
-                                    style={[styles.separator, { backgroundColor: colors.border }]}
-                                />
-                            )}
-                            ListEmptyComponent={
-                                <Text style={[styles.emptyText, { color: colors.text }]}>
-                                    {emptyText}
-                                </Text>
-                            }
-                        />
-                        {multiple && (
-                            <View style={styles.footer}>
-                                <TouchableOpacity
                                     style={[
-                                        styles.footerBtn,
-                                        { backgroundColor: colors.cancelBackground },
+                                        styles.searchBox,
+                                        {
+                                            backgroundColor: colors.card,
+                                            borderColor: colors.border,
+                                        },
                                     ]}
-                                    onPress={cancelHandler}
-                                    activeOpacity={0.7}
                                 >
+                                    {searchIcon ?? <SearchIcon color={colors.placeholder} />}
+                                    <TextInput
+                                        style={[
+                                            styles.searchInput,
+                                            regularFontStyle,
+                                            { color: colors.text },
+                                        ]}
+                                        placeholder={searchPlaceholder}
+                                        placeholderTextColor={colors.placeholder}
+                                        value={search}
+                                        onChangeText={setSearch}
+                                    />
+                                </View>
+                            )}
+                            <FlatList
+                                style={styles.list}
+                                data={filteredData}
+                                keyExtractor={item => item.value}
+                                renderItem={renderItem}
+                                keyboardShouldPersistTaps="handled"
+                                ItemSeparatorComponent={() => (
+                                    <View
+                                        style={[
+                                            styles.separator,
+                                            { backgroundColor: colors.border },
+                                        ]}
+                                    />
+                                )}
+                                ListEmptyComponent={
                                     <Text
-                                        style={[styles.cancelBtnText, { color: colors.cancelText }]}
+                                        style={[styles.emptyText, regularFontStyle, { color: colors.text }]}
                                     >
-                                        Cancel
+                                        {emptyText}
                                     </Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    style={[styles.footerBtn, { backgroundColor: colorTheme }]}
-                                    onPress={chooseHandler}
-                                    activeOpacity={0.7}
-                                >
-                                    <Text style={styles.chooseBtnText}>Choose</Text>
-                                </TouchableOpacity>
-                            </View>
-                        )}
-                    </View>
-                </View>
+                                }
+                            />
+                            {multiple && (
+                                <View style={styles.footer}>
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.footerBtn,
+                                            { backgroundColor: colors.cancelBackground },
+                                        ]}
+                                        onPress={cancelHandler}
+                                        activeOpacity={0.7}
+                                    >
+                                        <Text
+                                            style={[
+                                                styles.cancelBtnText,
+                                                boldFontStyle,
+                                                { color: colors.cancelText },
+                                            ]}
+                                        >
+                                            Cancel
+                                        </Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={[styles.footerBtn, { backgroundColor: colorTheme }]}
+                                        onPress={chooseHandler}
+                                        activeOpacity={0.7}
+                                    >
+                                        <Text style={[styles.chooseBtnText, boldFontStyle]}>
+                                            Choose
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+                        </Pressable>
+                    </Pressable>
+                </KeyboardAvoidingView>
             </Modal>
         </>
     );
 };
 
 const styles = StyleSheet.create({
-    input: {
-        justifyContent: 'center',
+    flex: {
+        flex: 1,
+    },
+    trigger: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        borderWidth: 1,
+        borderRadius: 10,
+        paddingHorizontal: 14,
+        paddingVertical: 12,
     },
     disabled: {
         opacity: 0.5,
     },
-    inputText: {
+    triggerText: {
+        flex: 1,
         fontSize: 16,
+        marginRight: 10,
     },
     overlay: {
         flex: 1,
+        justifyContent: 'flex-end',
     },
     modalView: {
-        position: 'absolute',
-        bottom: 0,
         width: '100%',
         height: '75%',
         borderTopLeftRadius: 15,
