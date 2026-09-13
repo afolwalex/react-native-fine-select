@@ -26,8 +26,16 @@
     "multi-select",
     "bottom-sheet"
   ],
-  "author": "Olawale",
+  "author": "Olawale <olawaleisaac9@gmail.com> (https://github.com/afolwalex)",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/afolwalex/react-native-fine-select.git"
+  },
+  "bugs": {
+    "url": "https://github.com/afolwalex/react-native-fine-select/issues"
+  },
+  "homepage": "https://github.com/afolwalex/react-native-fine-select#readme",
   "peerDependencies": {
     "react": ">=17.0.0",
     "react-native": ">=0.70.0"
